@@ -1,5 +1,6 @@
 ﻿namespace HttpClient
 {
+    using System;
     using System.Collections.Generic;
 
     /// <summary>
@@ -18,6 +19,24 @@
             this.NoCache = true;
             this.Headers = new Dictionary<string, string>();
             this.AcceptHeader = "application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5";
+        }
+
+        private string name = null;
+
+        /// <summary>
+        /// Gets or sets the name of the test
+        /// </summary>
+        public string Name
+        {
+            get
+            {
+                return this.name ?? this.GenerateName();
+            }
+
+            set
+            {
+                this.name = value;
+            }
         }
 
         /// <summary>
@@ -59,5 +78,10 @@
         /// Gets or sets the request content type
         /// </summary>
         public string ContentType { get; set; }
+
+        private string GenerateName()
+        {
+            return String.Format("({0}) {1}", this.Method, this.Url);
+        }
     }
 }
