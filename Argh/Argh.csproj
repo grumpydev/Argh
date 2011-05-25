@@ -72,6 +72,8 @@
     <Compile Include="DSL\CapitalisationCompilerStep.cs" />
     <Compile Include="DSL\SettingsLoadException.cs" />
     <Compile Include="DSL\UnknownHashLiteralKeyToStringLiteral.cs" />
+    <Compile Include="Helpers\HttpEncoder.cs" />
+    <Compile Include="Helpers\HttpUtility.cs" />
     <Compile Include="HttpTester.cs" />
     <Compile Include="HttpTesterResults.cs" />
     <Compile Include="Program.cs" />

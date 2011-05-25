@@ -3,6 +3,8 @@
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
 
     using HttpClient;
 
@@ -106,6 +108,23 @@
             {
                 this.currentRequestConfiguration.Headers.Add(header.ToString(), headers[header].ToString());
             }
+        }
+
+        public void PostForm(IDictionary formElements)
+        {
+            if (this.currentRequestConfiguration == null)
+            {
+                return;
+            }
+
+            var sb = new StringBuilder();
+            foreach (var formElement in formElements.Keys)
+            {
+                sb.AppendFormat("{0}={1};", Helpers.HttpUtility.UrlEncode(formElement.ToString()), Helpers.HttpUtility.UrlEncode(formElements[formElement].ToString()));
+            }
+
+            this.currentRequestConfiguration.ContentType = @"application/x-www-form-urlencoded";
+            this.currentRequestConfiguration.RequestBody = sb.ToString();
         }
 
         public void Body(string body)
