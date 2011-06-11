@@ -4,6 +4,7 @@ ARGH is a simple stress test / benchmarking tool for http web applications/servi
 
 As example of the DSL is:
 
+```boo
 ﻿Iterations = 1
 
 RequestConfiguration "Get Request":
@@ -29,3 +30,4 @@ RequestConfiguration "Automatic Form Post":
 		testing:"field value",
 		anotherTest:"another field value"
 	}
+```
