@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Threading;
 
     using Argh.DSL;
 
@@ -101,6 +102,7 @@
                 GC.Collect();
                 GC.WaitForFullGCComplete();
                 GC.WaitForPendingFinalizers();
+                Thread.Sleep(1000);
             }
 
             return results;
