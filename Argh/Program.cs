@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
 
     using Argh.DSL;
@@ -14,15 +15,17 @@
         {
             Console.WriteLine("\nAsync Request Generator for HTTP (ARGH)\n");
 
-            if (args.Length != 1)
+            var config = new Config(args);
+
+            if (String.IsNullOrWhiteSpace(config.InputFile) || !File.Exists(config.InputFile))
             {
                 ShowUsage();
                 return;
             }
 
-            var settings = Settings.Load(args[0]);
+            var settings = Settings.Load(config.InputFile);
 
-            var results = Run(settings);
+            var results = Run(settings).ToArray();
 
             Console.WriteLine("\nResults:\n");
             foreach (var result in results)
@@ -32,15 +35,37 @@
                 Console.WriteLine();
             }
 
-            Console.WriteLine("Press [Enter] to exit.");
-            Console.ReadLine();
+            if (!String.IsNullOrWhiteSpace(config.OutputFile))
+            {
+                WriteOutputToFile(results, config.OutputFile);
+            }
+        }
+
+        private static void WriteOutputToFile(IEnumerable<Tuple<RequestConfiguration, HttpTesterResults>> results, string outputFile)
+        {
+            if (File.Exists(outputFile))
+            {
+                File.Delete(outputFile);
+            }
+
+            using (var output = File.CreateText(outputFile))
+            {
+                output.WriteLine(@"TestName,Iterations,Errors,PeakSimul,SecondsToExecute,RequestPerSecond");
+
+                foreach (var result in results)
+                {
+                    output.WriteLine("'{0}',{1},{2},{3},{4:0.00},{5:0.00}", result.Item1.Name.Replace("'", "''"), result.Item2.TotalExecuted, result.Item2.Errored, result.Item2.PeakSimultaneous, result.Item2.ExecutionTime.TotalSeconds, result.Item2.TotalExecuted / result.Item2.ExecutionTime.TotalSeconds);
+                }
+
+                output.Close();
+            }
         }
 
         private static void ShowUsage()
         {
             Console.WriteLine("No configuration file specified.\n");
             Console.WriteLine("Usage:");
-            Console.WriteLine("\tArgh <config filename>\n\n");
+            Console.WriteLine("\tArgh [-o:outputfilename.csv] <config filename>\n\n");
             Console.WriteLine("Sample config file: \n");
 
             Console.WriteLine("Iterations = 4000");
