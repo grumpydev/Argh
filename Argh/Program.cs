@@ -32,7 +32,21 @@
             foreach (var result in results)
             {
                 Console.WriteLine(result.Item1.Name);
+
+                if (result.Item2.Errors.Any())
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("Errors:");
+
+                    foreach (var error in result.Item2.Errors)
+                    {
+                        Console.WriteLine(error);
+                        Console.WriteLine("-----------");
+                    }
+                }
+
                 Console.WriteLine("Completed {0} iterations, {1} errors, {2} peak simultaneous, {3:0.00} seconds, {4:0.00} req/sec", result.Item2.TotalExecuted, result.Item2.Errored, result.Item2.PeakSimultaneous, result.Item2.ExecutionTime.TotalSeconds, result.Item2.TotalExecuted / result.Item2.ExecutionTime.TotalSeconds);
+
                 Console.WriteLine();
             }
 
@@ -56,6 +70,18 @@
                 foreach (var result in results)
                 {
                     output.WriteLine("'{0}',{1},{2},{3},{4:0.00},{5:0.00}", result.Item1.Name.Replace("'", "''"), result.Item2.TotalExecuted, result.Item2.Errored, result.Item2.PeakSimultaneous, result.Item2.ExecutionTime.TotalSeconds, result.Item2.TotalExecuted / result.Item2.ExecutionTime.TotalSeconds);
+
+                    if (result.Item2.Errors.Any())
+                    {
+                        output.WriteLine();
+                        output.WriteLine("Errors:");
+
+                        foreach (var error in result.Item2.Errors)
+                        {
+                            output.WriteLine(error);
+                            output.WriteLine("-----------");
+                        }
+                    }
                 }
 
                 output.Close();

@@ -1,6 +1,7 @@
 ﻿namespace Argh
 {
     using System;
+    using System.Collections.Generic;
 
     /// <summary>
     /// Results of a test run
@@ -14,12 +15,14 @@
         /// <param name="errored">The number of iterations that threw errors</param>
         /// <param name="peakSimultaneous">Maximum amount of concurrent connections</param>
         /// <param name="executionTime">Total execution time</param>
-        public HttpTesterResults(int totalExecuted, int errored, int peakSimultaneous, TimeSpan executionTime)
+        /// <param name="errors">Error exceptions</param>
+        public HttpTesterResults(int totalExecuted, int errored, int peakSimultaneous, TimeSpan executionTime, IEnumerable<Exception> errors = null)
         {
             this.TotalExecuted = totalExecuted;
             this.Errored = errored;
             this.PeakSimultaneous = peakSimultaneous;
             this.ExecutionTime = executionTime;
+            this.Errors = errors ?? new Exception[] { };
 
             this.RequestsPerSecond = this.TotalExecuted / this.ExecutionTime.TotalSeconds;
         }
@@ -48,5 +51,10 @@
         /// Gets the number of requests processed per second
         /// </summary>
         public double RequestsPerSecond { get; private set; }
+
+        /// <summary>
+        /// Gets any error exceptions
+        /// </summary>
+        public IEnumerable<Exception> Errors { get; private set; }
     }
 }

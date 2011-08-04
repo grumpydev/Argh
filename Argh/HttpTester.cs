@@ -1,6 +1,7 @@
 namespace Argh
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Diagnostics;
     using System.Threading;
 
@@ -28,6 +29,8 @@ namespace Argh
 
         private object peakInProgressLock = new object();
         private int peakInProgress;
+
+        private readonly ConcurrentBag<Exception> errors = new ConcurrentBag<Exception>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpTester"/> class.
@@ -82,6 +85,7 @@ namespace Argh
                         },
                     e =>
                         {
+                            this.errors.Add(e);
                             Interlocked.Increment(ref this.totalExecuted);
                             Interlocked.Increment(ref this.errored);
                             Interlocked.Decrement(ref this.inProgress);
@@ -93,7 +97,7 @@ namespace Argh
 
             stopwatch.Stop();
 
-            return new HttpTesterResults(this.totalExecuted, this.errored, this.peakInProgress, stopwatch.Elapsed);
+            return new HttpTesterResults(this.totalExecuted, this.errored, this.peakInProgress, stopwatch.Elapsed, this.errors);
         }
 
         private void ResetCounters()
