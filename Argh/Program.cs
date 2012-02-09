@@ -4,6 +4,8 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Net;
+    using System.Text;
     using System.Threading;
 
     using Argh.DSL;
@@ -33,18 +35,6 @@
             {
                 Console.WriteLine(result.Item1.Name);
 
-                if (result.Item2.Errors.Any())
-                {
-                    Console.WriteLine();
-                    Console.WriteLine("Errors:");
-
-                    foreach (var error in result.Item2.Errors)
-                    {
-                        Console.WriteLine(error);
-                        Console.WriteLine("-----------");
-                    }
-                }
-
                 Console.WriteLine("Completed {0} iterations, {1} errors, {2} peak simultaneous, {3:0.00} seconds, {4:0.00} req/sec", result.Item2.TotalExecuted, result.Item2.Errored, result.Item2.PeakSimultaneous, result.Item2.ExecutionTime.TotalSeconds, result.Item2.TotalExecuted / result.Item2.ExecutionTime.TotalSeconds);
 
                 Console.WriteLine();
@@ -53,6 +43,11 @@
             if (!String.IsNullOrWhiteSpace(config.OutputFile))
             {
                 WriteOutputToFile(results, config.OutputFile);
+            }
+
+            if (!String.IsNullOrWhiteSpace(config.ErrorFile))
+            {
+                WriteErrorsToFile(results, config.ErrorFile);
             }
         }
 
@@ -70,29 +65,68 @@
                 foreach (var result in results)
                 {
                     output.WriteLine("'{0}',{1},{2},{3},{4:0.00},{5:0.00}", result.Item1.Name.Replace("'", "''"), result.Item2.TotalExecuted, result.Item2.Errored, result.Item2.PeakSimultaneous, result.Item2.ExecutionTime.TotalSeconds, result.Item2.TotalExecuted / result.Item2.ExecutionTime.TotalSeconds);
-
-                    if (result.Item2.Errors.Any())
-                    {
-                        output.WriteLine();
-                        output.WriteLine("Errors:");
-
-                        foreach (var error in result.Item2.Errors)
-                        {
-                            output.WriteLine(error);
-                            output.WriteLine("-----------");
-                        }
-                    }
                 }
 
                 output.Close();
             }
         }
 
+        private static void WriteErrorsToFile(IEnumerable<Tuple<RequestConfiguration, HttpTesterResults>> results, string errorFile)
+        {
+            if (!string.IsNullOrEmpty(errorFile) && File.Exists(errorFile))
+            {
+                File.Delete(errorFile);
+            }
+
+            foreach (var result in results.Where(result => result.Item2.Errors.Any()))
+            {
+                Console.WriteLine("Writing errors to: {0}", errorFile);
+                LogErrors(result, errorFile);
+            }
+        }
+
+        private static void LogErrors(Tuple<RequestConfiguration, HttpTesterResults> result, string errorFile)
+        {
+            var errorBuilder = new StringBuilder();
+            errorBuilder.AppendFormat("{0} Errors:", result.Item1.Name);
+
+            foreach (var error in result.Item2.Errors)
+            {
+                errorBuilder.AppendLine(GetErrorText(error));
+            }
+
+            File.AppendAllText(errorFile, errorBuilder.ToString());
+        }
+
+        private static string GetErrorText(Exception error)
+        {
+            var webException = error as WebException;
+
+            if (webException == null)
+            {
+                return error.ToString();
+            }
+
+            var body = "No body";
+            using (var stream = webException.Response.GetResponseStream())
+            {
+                if (stream != null)
+                {
+                    using (var reader = new StreamReader(stream))
+                    {
+                        body = reader.ReadToEnd().Trim();
+                    }
+                }
+            }
+
+            return string.Format("WebException: {0}\n{1}", webException.Status, body);
+        }
+
         private static void ShowUsage()
         {
             Console.WriteLine("No configuration file specified.\n");
             Console.WriteLine("Usage:");
-            Console.WriteLine("\tArgh [-o:outputfilename.csv] <config filename>\n\n");
+            Console.WriteLine("\tArgh [-o:outputfilename.csv] [-e:errorfilename] <config filename>\n\n");
             Console.WriteLine("Sample config file: \n");
 
             Console.WriteLine("Iterations = 4000");
@@ -112,7 +146,6 @@
             Console.WriteLine("\tno_cache true");
             Console.WriteLine("\tcontent_type \"application/x-www-form-urlencoded\"");
             Console.WriteLine("\tbody \"testing=qwdqw\"");
-            return;
         }
 
         private static IEnumerable<Tuple<RequestConfiguration, HttpTesterResults>> Run(ArghSettings settings)
