@@ -18,7 +18,7 @@
             this.UserAgent = "AsyncHttpClient/1.0 (Windows; U; Windows NT 6.1; en-GB)";
             this.NoCache = true;
             this.Headers = new Dictionary<string, string>();
-            this.AcceptHeader = "application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5";
+            this.AcceptHeader = "text/html;q=1.0,*/*;q=0.9";
         }
 
         private string name = null;

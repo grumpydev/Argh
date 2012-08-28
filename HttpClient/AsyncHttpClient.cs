@@ -64,6 +64,7 @@ namespace HttpClient
             var request = (HttpWebRequest)WebRequest.Create(configuration.Url);
             request.UserAgent = configuration.UserAgent;
             request.Method = configuration.Method.ToString().ToUpper();
+            request.Accept = configuration.AcceptHeader;
 
             foreach (var header in configuration.Headers)
             {
