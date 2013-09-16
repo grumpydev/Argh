@@ -120,7 +120,7 @@
             var sb = new StringBuilder();
             foreach (var formElement in formElements.Keys)
             {
-                sb.AppendFormat("{0}={1};", Helpers.HttpUtility.UrlEncode(formElement.ToString()), Helpers.HttpUtility.UrlEncode(formElements[formElement].ToString()));
+                sb.AppendFormat("{0}={1}&", Helpers.HttpUtility.UrlEncode(formElement.ToString()), Helpers.HttpUtility.UrlEncode(formElements[formElement].ToString()));
             }
 
             this.currentRequestConfiguration.ContentType = @"application/x-www-form-urlencoded";
